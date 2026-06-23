@@ -37,9 +37,9 @@
         <!-- ===== 拖拽上传区 ===== -->
         <div
           class="upload-zone relative border-2 border-dashed rounded-2xl p-10 text-center
-                 transition-all duration-300 cursor-pointer select-none"
+                 transition-all duration-300 cursor-pointer select-none upload-zone-breathe"
           :class="isDragover
-            ? 'border-[--color-congqian] bg-[--color-congqian]/5 scale-[1.01]'
+            ? '!border-[--color-congqian] bg-[--color-congqian]/5 scale-[1.01]'
             : 'border-[--color-lanming] hover:border-[--color-bizi] hover:bg-[--color-yubai]/50'"
           @click="triggerFileInput"
           @dragover.prevent="isDragover = true"
