@@ -1,78 +1,61 @@
 <template>
-  <div class="movie-track-wrapper relative flex h-full w-full">
-    <!-- ===== 左侧时光轴 80px ===== -->
-    <aside class="timeline-sidebar flex-shrink-0 w-[80px] h-full flex flex-col items-center justify-center
-                  border-r border-[--color-lanming]/20 bg-gradient-to-r from-[--color-yubai] to-[--color-yubai]/40
+  <div class="movie-track-wrapper relative flex h-full w-full overflow-hidden">
+    <aside class="timeline-sidebar flex-shrink-0 w-[60px] h-full flex flex-col items-center justify-center
+                  border-r border-[--color-lanming]/15 bg-gradient-to-r from-[--color-yubai] to-[--color-yubai]/20
                   backdrop-blur-sm z-20 select-none">
-      <div class="relative flex flex-col items-center h-[80%] justify-center">
-        <!-- 竖线 -->
-        <div class="absolute top-0 bottom-0 w-[1px] bg-[--color-lanming]/25 left-1/2 -translate-x-1/2"></div>
+      <div class="relative flex flex-col items-center h-[70%] justify-center">
+        <div class="absolute top-0 bottom-0 w-[1px] bg-[--color-lanming]/20 left-1/2 -translate-x-1/2"></div>
 
         <template v-for="(group, idx) in photoGroups" :key="group.date">
-          <!-- 时间点 -->
           <div class="relative z-10 flex flex-col items-center"
-               :class="{ 'my-7': idx > 0 && idx < photoGroups.length - 1, 'mt-7': idx === 0, 'mb-7': idx === photoGroups.length - 1 }">
+               :class="{ 'my-6': idx > 0 && idx < photoGroups.length - 1, 'mt-6': idx === 0, 'mb-6': idx === photoGroups.length - 1 }">
             <div
-              class="w-3 h-3 rounded-full cursor-pointer transition-all duration-500 hover:scale-150"
+              class="w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-500 hover:scale-130 border border-white"
               :class="idx === activeGroupIndex
-                ? 'bg-[--color-congqian] shadow-lg shadow-[--color-congqian]/30 scale-125'
-                : 'bg-[--color-lanming] hover:bg-[--color-bizi]'"
+                ? 'bg-[--color-congqian] shadow-md shadow-[--color-congqian]/40 scale-110'
+                : 'bg-[--color-lanming]/60 hover:bg-[--color-bizi]'"
               :title="group.label"
               @click="scrollToGroup(idx)">
             </div>
-            <!-- 活跃日期标签 -->
             <span
-              class="absolute left-full ml-2 text-[11px] font-serif whitespace-nowrap transition-all duration-500"
-              :class="idx === activeGroupIndex
-                ? 'text-[--color-congqian] font-bold opacity-100 translate-x-0'
-                : 'text-[--color-lanming] opacity-0 -translate-x-2'">
-              {{ group.label }}
+              class="absolute left-full ml-3 text-[10px] font-mono tracking-widest text-[--color-congqian] font-bold whitespace-nowrap transition-all duration-500"
+              :class="idx === activeGroupIndex ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none'">
+              {{ group.day }}日
             </span>
           </div>
         </template>
       </div>
     </aside>
 
-    <!-- ===== 电影轨道主区域 ===== -->
-    <div class="track-main flex-1 flex flex-col relative min-w-0">
+    <div class="track-main flex-1 flex flex-col relative min-w-0 bg-[#E8EDE4]/40">
       <div
         ref="trackEl"
-        class="photo-track flex-1 flex items-center gap-4 px-10 overflow-x-auto overflow-y-hidden
-               cursor-grab active:cursor-grabbing"
+        class="photo-track flex-1 flex items-center gap-12 px-16 overflow-x-auto overflow-y-hidden
+               cursor-grab active:cursor-grabbing no-scrollbar"
         :class="{ 'cursor-default': batchMode }"
         @wheel.passive="handleWheel"
         @scroll="updateProgress"
       >
-        <!-- 开场留白 -->
-        <div class="flex-shrink-0 w-[80px]"></div>
+        <div class="flex-shrink-0 w-[60px]"></div>
 
         <template v-for="(group, gIdx) in photoGroups" :key="group.date">
-          <!-- 场记板式日期卡片 -->
+          
           <div
             :ref="el => { if (el) groupRefs[gIdx] = el }"
-            class="date-clapboard flex-shrink-0 w-[80px] h-[240px] rounded-2xl flex flex-col items-center justify-center
-                   bg-white/40 backdrop-blur-sm border border-[--color-lanming]/20 select-none
-                   transition-all duration-500"
-            :class="gIdx === activeGroupIndex
-              ? 'shadow-lg shadow-[--color-congqian]/8 scale-105 border-[--color-bizi]/30'
-              : 'shadow-sm hover:shadow-md'">
-            <!-- 场记板上缘条纹 -->
-            <div class="w-full h-1 bg-[--color-lanming]/30 rounded-t-2xl mb-3"></div>
-            <span class="text-[28px] font-serif font-bold text-[--color-congqian] leading-none">
+            class="date-section-header flex-shrink-0 flex flex-col justify-center items-start select-none pr-4 border-l-2 border-[--color-lanming]/30 pl-4 h-[120px] transition-all duration-500"
+            :class="gIdx === activeGroupIndex ? 'opacity-100 translate-x-0' : 'opacity-40 -translate-x-1'"
+          >
+            <span class="text-4xl font-serif font-bold text-[--color-congqian] tracking-tighter leading-none">
               {{ group.day }}
             </span>
-            <span class="text-[10px] text-[--color-bizi] mt-2 tracking-[0.15em]">
+            <span class="text-[10px] font-mono text-[--color-bizi] mt-1.5 tracking-wider">
               {{ group.month }}
             </span>
-            <div class="w-6 h-[1px] bg-[--color-lanming]/40 my-2"></div>
-            <span class="text-[9px] text-[--color-lanming]">
-              {{ group.photos.length }}帧
+            <span class="text-[9px] font-sans text-gray-400 mt-1 tracking-widest">
+              —— SCENE {{ group.photos.length }}
             </span>
-            <!-- 场记板下缘条纹 -->
-            <div class="w-full h-1 bg-[--color-lanming]/30 rounded-b-2xl mt-3"></div>
           </div>
 
-          <!-- 照片卡片 -->
           <PhotoCard
             v-for="photo in group.photos"
             :key="photo.id"
@@ -84,19 +67,16 @@
           />
         </template>
 
-        <!-- 结尾留白 -->
-        <div class="flex-shrink-0 w-[80px]"></div>
+        <div class="flex-shrink-0 w-[150px]"></div>
       </div>
 
-      <!-- ===== 底部进度条 4px ===== -->
-      <div class="progress-container h-1 bg-[--color-yubai] border-t border-[--color-lanming]/15 relative z-10 flex-shrink-0">
-        <div class="progress-bar h-full transition-all duration-200 ease-out"
+      <div class="progress-container h-[2px] bg-[--color-lanming]/10 relative z-10 flex-shrink-0">
+        <div class="progress-bar h-full bg-[--color-congqian] transition-all duration-300 ease-out"
              :style="{ width: progressPercent + '%' }"></div>
-        <!-- 进度节点 -->
-        <div class="absolute inset-0">
+        <div class="absolute inset-0 pointer-events-none">
           <div v-for="(g, idx) in photoGroups" :key="'pd-' + g.date"
-            class="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full transition-all duration-500"
-            :class="idx <= activeGroupIndex ? 'bg-[--color-congqian]' : 'bg-[--color-lanming]/50'"
+            class="absolute top-1/2 -translate-y-1/2 w-1 h-1 rounded-full transition-all duration-500"
+            :class="idx <= activeGroupIndex ? 'bg-[--color-congqian]' : 'bg-transparent'"
             :style="{ left: dotPositions[idx] + '%' }"></div>
         </div>
       </div>
@@ -114,7 +94,6 @@ import { deletePhoto, deletePhotoFromStorage } from '../lib/supabase.js'
 const props = defineProps({ photos: { type: Array, required: true } })
 const emit = defineEmits(['photos-updated'])
 
-// ===== 分组 =====
 const photoGroups = computed(() => {
   const groups = {}
   for (const p of props.photos) {
@@ -129,13 +108,12 @@ const photoGroups = computed(() => {
         date,
         label: `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`,
         day: String(d.getDate()).padStart(2, '0'),
-        month: `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}`,
+        month: `${d.getFullYear()} . ${String(d.getMonth()+1).padStart(2,'0')}`,
         photos
       }
     })
 })
 
-// ===== 惯性滚动 =====
 const trackEl = ref(null)
 const groupRefs = ref({})
 const activeGroupIndex = ref(0)
@@ -147,26 +125,16 @@ let animFrame = null
 function handleWheel(e) {
   if (!trackEl.value) return
   e.preventDefault()
-
-  // 累加速度
-  velocity += e.deltaY * 1.2
-  // 限速
-  velocity = Math.max(-80, Math.min(80, velocity))
-
-  if (!animFrame) {
-    animFrame = requestAnimationFrame(applyInertia)
-  }
+  velocity += e.deltaY * 1.0
+  velocity = Math.max(-60, Math.min(60, velocity))
+  if (!animFrame) animFrame = requestAnimationFrame(applyInertia)
 }
 
 function applyInertia() {
   const el = trackEl.value
   if (!el) { animFrame = null; return }
-
   el.scrollLeft += velocity
-
-  // 摩擦力衰减
   velocity *= 0.88
-
   if (Math.abs(velocity) < 0.5) {
     velocity = 0
     animFrame = null
@@ -199,7 +167,7 @@ function determineActive() {
 function scrollToGroup(idx) {
   const el = groupRefs.value[idx]
   if (!el || !trackEl.value) return
-  trackEl.value.scrollTo({ left: el.offsetLeft - 120, behavior: 'smooth' })
+  trackEl.value.scrollTo({ left: el.offsetLeft - 60, behavior: 'smooth' })
 }
 
 const dotPositions = computed(() =>
@@ -208,7 +176,6 @@ const dotPositions = computed(() =>
     : photoGroups.value.map((_, i) => (i / (photoGroups.value.length - 1)) * 100)
 )
 
-// ===== 批量 =====
 const batchMode = ref(false)
 const selectedIds = ref(new Set())
 
@@ -239,7 +206,6 @@ async function batchDownload() {
   selectedIds.value.clear()
 }
 
-// ===== 删除 =====
 async function handleDeletePhoto(id) {
   const photo = props.photos.find(p => p.id === id)
   if (photo?.r2_key) await deletePhotoFromStorage(photo.r2_key)
@@ -251,7 +217,6 @@ defineExpose({ toggleBatchMode, batchDownload, batchMode, selectedIds })
 </script>
 
 <style scoped>
-.photo-track::-webkit-scrollbar { height: 4px; }
-.photo-track::-webkit-scrollbar-track { background: transparent; }
-.photo-track::-webkit-scrollbar-thumb { background: var(--color-lanming); border-radius: 99px; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
