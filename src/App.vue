@@ -1,6 +1,10 @@
 <template>
-  <div class="app-container h-screen w-screen flex flex-col overflow-hidden bg-[--color-yubai]">
-    
+  <!-- ===== 密码锁屏 ===== -->
+  <PasswordGate v-if="!isUnlocked" @unlocked="onUnlocked" />
+
+  <!-- ===== 主应用 ===== -->
+  <div v-else class="app-container h-screen w-screen flex flex-col overflow-hidden bg-[--color-yubai]">
+
     <!-- ===== 顶部导航（电影开幕式宽幅质感） ===== -->
     <header class="flex-shrink-0 flex items-center justify-between px-8 py-4 z-30
                     bg-[#fafaf7]/90 backdrop-blur-xl border-b border-[--color-lanming]/20 shadow-[0_2px_20px_rgba(108, 134, 80, 0.03)]">
@@ -137,7 +141,21 @@
 import { ref, computed, onMounted } from 'vue'
 import MovieTrack from './components/MovieTrack.vue'
 import UploadDrawer from './components/UploadDrawer.vue'
+import PasswordGate from './components/PasswordGate.vue'
 import { fetchPhotos } from './lib/supabase.js'
+
+// ===== 密码验证 =====
+const isUnlocked = ref(localStorage.getItem('love_album_unlocked') === 'true')
+
+function onUnlocked() {
+  isUnlocked.value = true
+}
+
+// 锁定功能（可选：点击标题5次弹出锁定，方便测试）
+function lockAlbum() {
+  localStorage.removeItem('love_album_unlocked')
+  isUnlocked.value = false
+}
 
 const photos = ref([])
 const loading = ref(false)
@@ -148,7 +166,7 @@ const trackRef = ref(null)
 const audioRef = ref(null)
 const isPlaying = ref(false)
 // 默认内置了一首温柔沉浸的温暖钢琴曲直链，你可以换成任意属于你们的 .mp3 链接
-const bgmUrl = ref('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3')
+const bgmUrl = ref('https://s.myhkw.cn/api.php?get=url&type=wy&id=541687281&sign=50TcoZa5rL0Wg&t=1782202441')
 
 function toggleMusic() {
   if (!audioRef.value) return
