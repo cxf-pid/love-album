@@ -4,14 +4,48 @@
     <!-- ===== 顶部导航（电影开幕式宽幅质感） ===== -->
     <header class="flex-shrink-0 flex items-center justify-between px-8 py-4 z-30
                     bg-[#fafaf7]/90 backdrop-blur-xl border-b border-[--color-lanming]/20 shadow-[0_2px_20px_rgba(108, 134, 80, 0.03)]">
-      <!-- 左侧标题 -->
-      <div class="flex items-baseline gap-3 select-none">
-        <h1 class="text-2xl font-serif font-bold text-[--color-congqian] tracking-[0.15em]">
-          陈彪 <span class="text-[--color-bizi] text-lg font-normal font-sans">&</span> 王莎莎
-        </h1>
-        <span class="hidden sm:inline text-[10px] text-[--color-lanming] tracking-[0.4em] font-mono uppercase opacity-80">
-          · Film Track ·
-        </span>
+      <!-- 左侧标题 + 黑胶唱片BGM彩蛋 -->
+      <div class="flex items-center gap-4 select-none">
+        <div class="flex items-baseline gap-3">
+          <h1 class="text-2xl font-serif font-bold text-[--color-congqian] tracking-[0.15em]">
+            陈彪 <span class="text-[--color-bizi] text-lg font-normal font-sans">&</span> 王莎莎
+          </h1>
+          <span class="hidden sm:inline text-[10px] text-[--color-lanming] tracking-[0.4em] font-mono uppercase opacity-80">
+            · Film Track ·
+          </span>
+        </div>
+
+        <!-- 🎵 隐藏彩蛋：微型黑胶唱片机 -->
+        <div class="flex items-center gap-2 pl-3 border-l border-[--color-lanming]/25 relative group/music">
+          <div 
+            @click="toggleMusic"
+            class="vinyl-record w-7 h-7 rounded-full bg-[#222] border-2 border-[#444] shadow-md flex items-center justify-center cursor-pointer relative transition-transform active:scale-90"
+            :class="{ 'is-playing': isPlaying }"
+            title="我们的专属 BGM"
+          >
+            <!-- 唱片中心标签 -->
+            <div class="w-2.5 h-2.5 rounded-full bg-[--color-bizi] border border-white/20 flex items-center justify-center">
+              <div class="w-0.5 h-0.5 rounded-full bg-white"></div>
+            </div>
+            <!-- 音轨微纹理 -->
+            <div class="absolute inset-0.5 rounded-full border border-black/40 pointer-events-none"></div>
+            <div class="absolute inset-1.5 rounded-full border border-black/30 pointer-events-none"></div>
+          </div>
+          
+          <!-- 悬停提示曲名 -->
+          <span class="opacity-0 group-hover/music:opacity-80 transition-opacity duration-300 absolute left-9 whitespace-nowrap text-[9px] font-serif italic text-[--color-lanming] tracking-wider pointer-events-none">
+            ♫ {{ isPlaying ? '正在播放专属记忆...' : '点击留住声音' }}
+          </span>
+
+          <!-- 隐藏的原生音频标签 -->
+          <audio 
+            ref="audioRef" 
+            :src="bgmUrl" 
+            loop 
+            @play="isPlaying = true" 
+            @pause="isPlaying = false"
+          ></audio>
+        </div>
       </div>
 
       <!-- 右侧按钮组 -->
@@ -46,7 +80,7 @@
           打包 {{ selectedCount }} 帧 🎞️
         </button>
 
-        <!-- 主上传 CTA：彻底剥离旧样式，强制执行高级暗房色调（解决白底重叠问题） -->
+        <!-- 主上传 CTA -->
         <button @click="showUploadDrawer = true"
           class="!bg-[--color-congqian] !text-[#fafaf7] px-5 py-2 rounded-full text-xs font-serif font-bold tracking-wider
                  hover:!bg-[#485939] active:scale-95 transition-all duration-300
@@ -64,7 +98,7 @@
     <!-- ===== 主体内容区域 ===== -->
     <main class="flex-1 relative overflow-hidden bg-[#e6e8e3]/30">
       
-      <!-- 加载中状态 (电影粒子感加载) -->
+      <!-- 加载中状态 -->
       <div v-if="loading && photos.length === 0"
         class="absolute inset-0 flex flex-col items-center justify-center gap-4 z-10 bg-[#fafaf7]/60 backdrop-blur-sm">
         <div class="flex gap-2">
@@ -94,7 +128,7 @@
       <MovieTrack v-if="photos.length > 0" ref="trackRef" :photos="photos" @photos-updated="loadPhotos"/>
     </main>
 
-    <!-- ===== 上传抽屉（暗房组件） ===== -->
+    <!-- ===== 上传抽屉 ===== -->
     <UploadDrawer :visible="showUploadDrawer" @close="showUploadDrawer = false" @uploaded="onUploaded"/>
   </div>
 </template>
@@ -110,11 +144,26 @@ const loading = ref(false)
 const showUploadDrawer = ref(false)
 const trackRef = ref(null)
 
-// 响应式计算子组件传上来的批量状态与选中计数
+// ===== BGM 音频控制核心逻辑 =====
+const audioRef = ref(null)
+const isPlaying = ref(false)
+// 默认内置了一首温柔沉浸的温暖钢琴曲直链，你可以换成任意属于你们的 .mp3 链接
+const bgmUrl = ref('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3')
+
+function toggleMusic() {
+  if (!audioRef.value) return
+  if (isPlaying.value) {
+    audioRef.value.pause()
+  } else {
+    audioRef.value.play().catch(err => {
+      console.log("浏览器拦截了自动播放，需用户手动交互:", err)
+    })
+  }
+}
+
 const batchModeActive = computed(() => trackRef.value?.batchMode ?? false)
 const selectedCount = computed(() => trackRef.value?.selectedIds?.size ?? 0)
 
-// 加载 Supabase 中的照片数据
 async function loadPhotos() {
   loading.value = true
   try {
@@ -127,19 +176,31 @@ async function loadPhotos() {
   }
 }
 
-// 冲印成功回调
 function onUploaded() { 
   loadPhotos() 
 }
 
-// 挂载时自动触发显影
 onMounted(() => {
   loadPhotos()
 })
 </script>
 
 <style>
-/* 全局基础动画淡入效果扩展 */
+/* ===== 黑胶唱片核心动画效果 ===== */
+.vinyl-record {
+  background-image: radial-gradient(circle, #333 10%, #111 90%);
+}
+
+.is-playing {
+  animation: spinVinyl 4.5s linear infinite;
+}
+
+@keyframes spinVinyl {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 基础通用动画 */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
